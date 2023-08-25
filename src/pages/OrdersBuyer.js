@@ -121,12 +121,12 @@ function OrdersBuyer(props) {
                           </Button>
 
                         case "mustBeRefunded":
-                          return <Button variant="outline-light" onClick={(e) => {disableButton(e);cancelOrder(item.orderId)}}>
+                          return <Button variant="outline-success" onClick={(e) => {disableButton(e);cancelOrder(item.orderId)}}>
                             Get refunded
                           </Button>
 
                         case "confirmed":
-                          return <Button variant="outline-success" onClick={(e) => {disableButton(e);closeOrder(item.orderId)}}>
+                          return <Button variant="outline-light" onClick={(e) => {disableButton(e);closeOrder(item.orderId)}}>
                             Confirm delivery
                           </Button>
                       }
