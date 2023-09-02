@@ -17,7 +17,6 @@ const orderspath = '/order';
 
 function Cart(props) {
   const [cart, setCart] = useState([]);
-  const [tmpCart, setTmpCart] = useState([]);
 
   const navigate = useNavigate();
 
@@ -34,38 +33,35 @@ function Cart(props) {
     API.get(cartsAPI, cartspath + "/" + props.username, {}).then((prodRes => setCart(prodRes)))
   }, [navigate, props.isAuthenticated, props.isBuyer, props.username]);
 
-  function createOrder() {
+  async function createOrder() {
 
-    cart.forEach(async (item) => {
+    for (const item of cart) {
       try {
-        await API.post(ordersAPI, orderspath, {
+      const res = await API.post(ordersAPI, orderspath, {
           queryStringParameters:{
           accessToken: props.accessToken
         },
         body:{
           buyerUsername: item.buyerUsername,
-          status: "drafted",
           sellerUsername: item.sellerUsername,
           productName: item.productName,
           quantity: item.quantity,
         }
-      }).then((res => {console.log(res);props.updateBalance(res.success)}))
-      setTmpCart(tmpCart.concat(item))
-      console.log(tmpCart)
-      } catch (error) {
-        if(error.message === "Request failed with status code 401"){
+      });
+      console.log(res);
+      props.updateBalance(res.success);
+      } 
+      catch (error) {
+        if(error.message === "Request failed with status code 471"){
           console.log("Insufficient items on sale.");
         }
-        if(error.message === "Request failed with status code 403"){
+        if(error.message === "Request failed with status code 473"){
           console.log("Insufficient balance.");
         }
       }
+    }
 
-    });
-
-    console.log(tmpCart)
-    setCart(tmpCart)
-    setTmpCart([]);
+    setCart([])
   }
 
   const deleteFromCart = (prodName, username) => {
