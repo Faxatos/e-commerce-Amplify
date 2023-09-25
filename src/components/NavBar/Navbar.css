@@ -9,7 +9,7 @@ hr.rounded {
     background-color: #060b26;
     height: 80px;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
   }
   
@@ -35,6 +35,22 @@ hr.rounded {
   .nav-menu.active {
     left: 0;
     transition: 350ms;
+  }
+
+  .profile-text {
+    text-decoration: none;
+    color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    padding: 10px 5px 10px 16px;
+    list-style: none;
+    height: 60px;
+  }
+
+  .centered-items{
+    margin: auto;
+    width: 50%;
+    padding-right: 15px
   }
   
   .nav-text {

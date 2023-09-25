@@ -11,35 +11,46 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Snackbar from '../components/SnackBar/SnackBar';
+
+import { useAuthContext } from '../contexts/AuthContext';
 
 function Profile(props) {
+    const { username, isBuyer, isAuthenticated, balance, setBalance, fullname, address, description, email } = useAuthContext();
+
     const navigate = useNavigate();
-    const [balance, setBalance] = useState(0);
+    const [pageBalance, setPageBalance] = useState(0);
     const [toUpdate, setToUpdate] = useState(0);
     const [updateType, setUpdateType] = useState(0);
 
     useEffect(() => {
-      if(props.isAuthenticated === false){
+      if(isAuthenticated === false){
         navigate('/')
       } 
-      setBalance(Number(props.balance))
-    }, [navigate, props.isAuthenticated]);
+      setPageBalance(Number(balance))
+    }, [navigate, isAuthenticated]);
 
     async function updateBalance() {
       const user = await Auth.currentAuthenticatedUser();
-      console.log(user)
-
       var newBal = (Number(updateType) === 0) ? (Number(user.attributes['custom:balance']) + Number(toUpdate)) : (Number(user.attributes['custom:balance']) - toUpdate)
       if(newBal < 0){
-        console.log("error: negative balance. withdraw denied")
+        props.addCustomSnack(<Snackbar variant="error" message="Insufficient balance - withdraw denied" />, {
+          horizontal: "top",
+          vertical: "right"
+      })
       }
       else{
         await Auth.updateUserAttributes(user, {
           'custom:balance': newBal.toString()
         });
 
-        props.updateBalance(newBal)
         setBalance(newBal)
+        setPageBalance(newBal)
+
+        props.addCustomSnack(<Snackbar variant="success" message="Balance updated" />, {
+          horizontal: "top",
+          vertical: "right"
+         })
       }
     }
 
@@ -48,11 +59,11 @@ function Profile(props) {
             <Col className="px-4 my-5">
               {
                 (function(){
-                  if (props.isBuyer === "true"){
-                    return (<Row><h1>Buyer Profile: {props.username}</h1></Row>)
+                  if (isBuyer === "true"){
+                    return (<Row><h1>Buyer Profile: {username}</h1></Row>)
                   }
-                  else if(props.isBuyer === "false"){
-                    return (<Row><h1>Seller Profile: {props.username}</h1></Row>)
+                  else if(isBuyer === "false"){
+                    return (<Row><h1>Seller Profile: {username}</h1></Row>)
                   }
                 })()
               }
@@ -62,7 +73,7 @@ function Profile(props) {
                     Full name:
                   </Form.Label>
                   <Col sm="10">
-                    <Form.Control plaintext readOnly defaultValue={props.fullname} />
+                    <Form.Control plaintext readOnly defaultValue={fullname} />
                   </Col>
                 </Form.Group>
 
@@ -71,7 +82,7 @@ function Profile(props) {
                     Email:
                   </Form.Label>
                   <Col sm="10">
-                    <Form.Control plaintext readOnly defaultValue={props.email} />
+                    <Form.Control plaintext readOnly defaultValue={email} />
                   </Col>
                 </Form.Group>
 
@@ -80,7 +91,7 @@ function Profile(props) {
                     Address:
                   </Form.Label>
                   <Col sm="10">
-                    <Form.Control plaintext readOnly defaultValue={props.address} />
+                    <Form.Control plaintext readOnly defaultValue={address} />
                   </Col>
                 </Form.Group>
 
@@ -89,7 +100,7 @@ function Profile(props) {
                       Description:
                     </Form.Label>
                     <Col sm="10">
-                      <Form.Control plaintext rows={3} readOnly defaultValue={props.description} />
+                      <Form.Control plaintext rows={3} readOnly defaultValue={description} />
                     </Col>
                 </Form.Group>
 
@@ -98,7 +109,7 @@ function Profile(props) {
                       Balance (€):
                     </Form.Label>
                     <Col sm="10">
-                      <Form.Control plaintext rows={3} readOnly value={balance.toFixed(2)} />
+                      <Form.Control plaintext rows={3} readOnly value={pageBalance.toFixed(2)} />
                     </Col>
                 </Form.Group>
               </Form>

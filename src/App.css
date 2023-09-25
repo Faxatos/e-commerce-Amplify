@@ -1,5 +1,33 @@
+.container-style{
+  padding-left: 12%
+}
+
+@media (min-width: 1400px){
+  .container {
+    max-width: 1320px;
+  } 
+}
+
+@media (min-width: 768px){
+  .container {
+    max-width: 720px;
+  } 
+}
+
+@media (min-width: 576px){
+  .container {
+    max-width: 540px;
+  } 
+}
+
+.text-color{
+  color:#060b26 ;
+}
+
 .App, h1 {
-  text-align: center;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  text-align: start;
 }
 
 .App-logo {
@@ -46,6 +74,17 @@
   border-radius: 5px;
   margin-bottom: 1rem;
   cursor: pointer;
+}
+
+.ProductMainCard {
+  width: 270px;
+  height: 440px;
+}
+
+.ProductListImg {
+  object-fit: cover;
+  height: 250px;
+  width: 270px;
 }
 
 @keyframes App-logo-spin {

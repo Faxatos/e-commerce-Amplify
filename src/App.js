@@ -26,123 +26,35 @@ import Products from './pages/Products';
 import OrdersSeller from './pages/OrdersSeller';
 import OrdersBuyer from './pages/OrdersBuyer';
 
+import AuthContextProvider from './contexts/AuthContext';
+import WithSnackbar from './components/SnackBar/WithSnackBar'
+
 Amplify.configure(awsExports);
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState('');
-  const [isBuyer, setIsBuyer] = useState('');
-  const [email, setEmail] = useState('');
-  const [fullname, setFullname] = useState('');
-  const [address, setAddress] = useState('');
-  const [description, setDescription] = useState('');
-  const [accessToken, setAccessToken] = useState('');
-  const [balance, setBalance] = useState(0);
-
-  function updateAuthStatus(authStatus) {
-    setIsAuthenticated(authStatus)
-
-    if(authStatus === true){
-      getUserInfo();
-    }
-    else{ //logout branch - reset current user fields
-      setAccessToken('');
-      setUsername('');
-      setIsBuyer('');
-      setFullname('');
-      setAddress('');
-      setDescription('');
-      setEmail('');
-      setBalance(0);
-    }
-  }
-
-  function updateBalance(newBalance) {
-    setBalance(newBalance);
-  }
-
-  async function getUserInfo() {
-    await Auth.currentAuthenticatedUser()
-    .then((user) => {
-      setAccessToken(user.signInUserSession.accessToken.jwtToken);
-      setUsername(user.username);
-      setIsBuyer(user.attributes['custom:isBuyer']);
-      setFullname(user.attributes['name']);
-      setAddress(user.attributes['address']);
-      setDescription(user.attributes['custom:description']);
-      setEmail(user.attributes['email']);
-      setBalance(user.attributes['custom:balance']);
-    })
-    .catch(error => console.log(`Error: ${error.message}`));
-  }
-
+function App(props) {
   return (
 
     <div>
-      <Navbar 
-        isAuthenticated={isAuthenticated} 
-        updateAuthStatus={updateAuthStatus}
-        isBuyer = {isBuyer}
-      />
-      <Routes>
-        <Route path='*' element={<Home 
-                                  isAuthenticated={isAuthenticated}
-                                  username = {username}
-                                  isBuyer = {isBuyer}
-                                />} />
-        <Route path='/' exact={true} element={<Home 
-                                  isAuthenticated={isAuthenticated}
-                                  username = {username}
-                                  isBuyer = {isBuyer}
-                                />} />
-        <Route path='/login' element={<Login updateAuthStatus={updateAuthStatus} />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='/validate' element={<Validate />} />
-        <Route path='/ordersSeller' element={<OrdersSeller
-                                          isAuthenticated={isAuthenticated} 
-                                          accessToken = {accessToken}
-                                          isBuyer = {isBuyer}
-                                          username = {username}
-                                          updateBalance={updateBalance} />} />
-        <Route path='/ordersBuyer' element={<OrdersBuyer 
-                                          isAuthenticated={isAuthenticated} 
-                                          accessToken = {accessToken}
-                                          isBuyer = {isBuyer}
-                                          username = {username}
-                                          updateBalance={updateBalance} />} />
-        <Route path='/cart' element={<Cart 
-                                        isAuthenticated={isAuthenticated}
-                                        accessToken = {accessToken}
-                                        username = {username}
-                                        isBuyer = {isBuyer}
-                                        updateBalance={updateBalance}
-                                       />} />
-        <Route path='/profile' element={<Profile 
-                                          isAuthenticated={isAuthenticated} 
-                                          isBuyer = {isBuyer}
-                                          username = {username}
-                                          email = {email}
-                                          fullname = {fullname}
-                                          address = {address}
-                                          description = {description}
-                                          balance = {balance}
-                                          updateBalance={updateBalance}
-                                        />} />
-        <Route path='/addProduct' element={<AddProducts 
-                                            isAuthenticated={isAuthenticated}
-                                            username = {username}
-                                            isBuyer = {isBuyer}
-                                          />} />
-        <Route path='/products' element={<Products 
-                                            isAuthenticated={isAuthenticated}
-                                            username = {username}
-                                            isBuyer = {isBuyer}
-                                           />} />
-      </Routes>
-      {/*<SiteFooter />*/}
+      <AuthContextProvider >
+          <Navbar/>
+          <Routes>
+            <Route path='*' element={<Home addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/' exact={true} element={<Home addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/login' element={<Login addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/register' element={<Register />} />
+            <Route path='/validate' element={<Validate addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/ordersSeller' element={<OrdersSeller addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/ordersBuyer' element={<OrdersBuyer  addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/cart' element={<Cart addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/profile' element={<Profile addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/addProduct' element={<AddProducts addCustomSnack={props.addCustomSnack}/>} />
+            <Route path='/products' element={<Products addCustomSnack={props.addCustomSnack}/>} />
+          </Routes>
+          {/*<SiteFooter />*/}
+      </AuthContextProvider>
     </div>
   )
 };
 
 
-export default App;
+export default WithSnackbar(App);

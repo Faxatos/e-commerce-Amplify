@@ -8,8 +8,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Snackbar from '../../components/SnackBar/SnackBar';
 
-function Validate() {
+function Validate(props) {
     const navigate = useNavigate()
     
     const [username, setUserName] = useState('');
@@ -22,8 +23,17 @@ function Validate() {
             console.log(authenticationCode);
 
             await Auth.confirmSignUp(username, authenticationCode)
+
+            props.addCustomSnack(<Snackbar variant="success" message="You have registered successfully!" />, {
+                horizontal: "top",
+                vertical: "right"
+            })
             navigate('/login')
-        } catch (err) { console.log(err) }
+        } catch (err) { 
+            props.addCustomSnack(<Snackbar variant="error" message={err.message} />, {
+                horizontal: "top",
+                vertical: "right"
+        }) }
     }
 
     return (

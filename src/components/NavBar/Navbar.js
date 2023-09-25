@@ -3,6 +3,7 @@ import { Auth } from "aws-amplify";
 
 import React, { useState } from 'react';
 import * as FaIcons from 'react-icons/fa';
+import * as FaUserCircle from 'react-icons/fa'
 import * as AiIcons from 'react-icons/ai';
 import * as PiIcons from 'react-icons/pi';
 import { Link } from 'react-router-dom';
@@ -11,7 +12,10 @@ import { SidebarSellerData } from './SidebarSellerData';
 import './Navbar.css';
 import { IconContext } from 'react-icons';
 
+import { useAuthContext } from '../../contexts/AuthContext';
+
 function Navbar(props) {
+    const { username, isBuyer, isAuthenticated, updateAuthStatus } = useAuthContext();
     const navigate = useNavigate();
     const [sidebar, setSidebar] = useState(true);
     const showSidebar = () => setSidebar(!sidebar);
@@ -20,7 +24,7 @@ function Navbar(props) {
         try {
             await Auth.signOut()
 
-            props.updateAuthStatus(false)
+            updateAuthStatus(false)
             navigate('/')
         } catch (err) { console.log(err) }
     }
@@ -33,6 +37,34 @@ function Navbar(props) {
           <Link to='#' className='menu-bars'>
             <FaIcons.FaBars onClick={() => showSidebar()} />
           </Link>
+          <div className='nav-text'>
+            <Link to={(function(){
+                        if(username === ""){
+                          return "/login"
+                        }
+                        else{
+                          return "/profile"
+                        }
+                        })()
+                      } className='profile-text'>
+              <FaIcons.FaUserCircle size={35}/>
+              <p className='centered-items'>
+                <span>
+                  {(function(){
+                        if(username === ""){
+                          return "guest"
+                        }
+                        else{
+                          return username
+                        }
+                        })()
+                      }
+                </span>
+              </p>
+            </Link>
+          </div>
+          
+                    
           {/* eventually add here more navbar components */}
         </div>
         <nav className={sidebar ? 'nav-menu active' : 'nav-menu'}>
@@ -44,7 +76,7 @@ function Navbar(props) {
             </li>
             {
               (function(){
-                if(props.isAuthenticated === false){
+                if(isAuthenticated === false){
                   return <><li className='nav-text'>
                     <Link to="/login">
                         <AiIcons.AiOutlineLogin />
@@ -58,7 +90,7 @@ function Navbar(props) {
                     </Link>
                 </li></>;
                 }
-                else{ //props.isAuthenticated === true
+                else{ //isAuthenticated === true
                   return <li className='nav-text'>
                   <Link onClick={() => handleLogout()}>
                       <AiIcons.AiOutlineLogout />
@@ -70,7 +102,7 @@ function Navbar(props) {
             <hr className="rounded"></hr>
             {
               (function(){
-                if(props.isAuthenticated === true && props.isBuyer === "true"){
+                if(isAuthenticated === true && isBuyer === "true"){
                   return SidebarBuyerData.map((item, index) => {
                     return (
                     <li key={index} className={item.cName}>
@@ -82,7 +114,7 @@ function Navbar(props) {
                     );
                   })
                 }
-                else if(props.isAuthenticated === true && props.isBuyer === "false"){
+                else if(isAuthenticated === true && isBuyer === "false"){
                   return SidebarSellerData.map((item, index) => {
                     return (
                     <li key={index} className={item.cName}>

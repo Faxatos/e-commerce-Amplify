@@ -2,14 +2,18 @@ import '../App.css';
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Amplify from 'aws-amplify'
 import { API } from 'aws-amplify';
-//import React, { useEffect, useState } from 'react';
+import {Storage} from 'aws-amplify';
 
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Snackbar from '../components/SnackBar/SnackBar';
+
+import { useAuthContext } from '../contexts/AuthContext';
 
 const productsAPI = "productsapi"
 const productspath = '/product'; 
@@ -17,6 +21,9 @@ const productspath = '/product';
 function AddProducts(props) {
     const navigate = useNavigate();
 
+    const { isAuthenticated, username } = useAuthContext();
+
+    const [image, setImage] = useState({});
     const [category, setCategory] = useState('');
     const [prodName, setProdName] = useState('');
     const [size, setSize] = useState('');
@@ -26,11 +33,20 @@ function AddProducts(props) {
     const [avQuantity, setAvQuantity] = useState('');
 
     useEffect(() => {
-        console.log(props.isAuthenticated)
-        if(props.isAuthenticated === false){
+        console.log(isAuthenticated)
+        if(isAuthenticated === false){
             navigate('/')
         }
-    }, [navigate, props.isAuthenticated]);
+    }, [navigate, isAuthenticated]);
+
+    const handleNewFile = e => {
+        const file = e.target.files[0]
+        setImage({
+            fileUrl: URL.createObjectURL(file),
+            file,
+            filename: file.name
+        })
+    }
 
     const handleNewProduct = () => {
         try {
@@ -42,16 +58,31 @@ function AddProducts(props) {
             console.log(price);
             console.log(avQuantity);
 
-            console.log(props.username)
+            console.log(username)
+
+            Storage.put(image.filename, image.file)
+                .then(result => {
+                    const msg = "Product " + prodName + " created"
+                        props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+                            horizontal: "top",
+                            vertical: "right"
+                    })
+                })
+                .catch(err => {
+                    props.addCustomSnack(<Snackbar variant="error" message={err.message} />, {
+                        horizontal: "top",
+                        vertical: "right"
+                    })
+                })
                 
             API.post(productsAPI, productspath, {
                 body: {
                     productName: prodName,
                     category: category,
-                    sellerUsername: props.username,
+                    sellerUsername: username,
                     price: price,
                     availableQuantity: avQuantity,
-                    imagePath: "toAdd",
+                    imagePath: image.filename,
                     size: size,
                     weight: weight,
                     color: color,
@@ -62,7 +93,7 @@ function AddProducts(props) {
                 console.log(err);
             })
             
-            navigate('/')
+            navigate('/products')
         } catch (err) { console.log(err) }
     }
 
@@ -140,7 +171,19 @@ function AddProducts(props) {
                             onChange={(e) => setColor(e.target.value)} />
                 </Col>
             </Form.Group>
+
+            <Form.Group as={Row} className="mb-3" controlId="formPlainFile">
+                <Form.Label column sm="2">
+                    Image:
+                </Form.Label>
+                <Col sm="10">
+                    <Form.Control type="file" placeholder="Select an Image"
+                            onChange={(e) => handleNewFile(e)} />
+                </Col>
+            </Form.Group>
+
             </Form>
+            
         </Col>
         <Col>
             <Button variant="primary" type="button"

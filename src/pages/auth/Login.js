@@ -8,8 +8,13 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Snackbar from '../../components/SnackBar/SnackBar';
+
+import { useAuthContext } from '../../contexts/AuthContext'
 
 function Login(props) {
+    const { updateAuthStatus } = useAuthContext();
+
     const navigate = useNavigate()
     
     const [username, setUsername] = useState('');
@@ -19,9 +24,17 @@ function Login(props) {
         try {
             await Auth.signIn(username, password)
 
-            props.updateAuthStatus(true)
+            updateAuthStatus(true)
+            props.addCustomSnack(<Snackbar variant="success" message="Logged in!" />, {
+                horizontal: "top",
+                vertical: "right"
+            })
             navigate('/home')
-        } catch (err) { console.log(err) }
+        } catch (err) { 
+            props.addCustomSnack(<Snackbar variant="error" message={err.message} />, {
+            horizontal: "top",
+            vertical: "right"
+        }) }
     }
 
     return (

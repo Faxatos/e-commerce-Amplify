@@ -9,28 +9,32 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Snackbar from '../components/SnackBar/SnackBar';
+
+import { useAuthContext } from '../contexts/AuthContext';
 
 const productsAPI = "productsapi"
 const productspath = '/product'; 
 
 function Products(props) {
+    const { username, isBuyer, isAuthenticated } = useAuthContext();
     const [products, setProducts] = useState([])
 
     const navigate = useNavigate();
 
     useEffect(() => {
-      if(props.isAuthenticated === false){
+      if(isAuthenticated === false){
         navigate('/')
       }
 
-      if(props.isBuyer === "true"){
+      if(isBuyer === "true"){
         navigate('/')
       }
 
-      console.log(props.username)
-      console.log(productspath + "/" + props.username)
-      API.get(productsAPI, productspath + "/" + props.username, {}).then((prodRes => setProducts(prodRes)))
-    }, [navigate, props.isAuthenticated, props.isBuyer, props.username]);
+      console.log(username)
+      console.log(productspath + "/" + username)
+      API.get(productsAPI, productspath + "/" + username, {}).then((prodRes => setProducts(prodRes)))
+    }, [navigate, isAuthenticated, isBuyer, username]);
 
     const handleNewQuantity = (event) => {
       event.preventDefault();
@@ -51,10 +55,18 @@ function Products(props) {
             color: currentProd.color,
         }
     }).then(result => {
-        console.log(result);
-    }).catch(err => {
-        console.log(err);
-    })
+      const msg = "Product " + currentProd.productName + " available quantity modified"
+              props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+                  horizontal: "top",
+                  vertical: "right"
+          })
+      })
+      .catch(err => {
+          props.addCustomSnack(<Snackbar variant="error" message={err.message} />, {
+              horizontal: "top",
+              vertical: "right"
+          })
+      })
     }
 
     return (

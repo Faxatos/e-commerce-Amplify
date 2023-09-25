@@ -5,13 +5,18 @@ import '../App.css';
 import { API } from 'aws-amplify';
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from 'react';
+import Snackbar from '../components/SnackBar/SnackBar';
 
 import Button from 'react-bootstrap/Button';
+
+import { useAuthContext } from '../contexts/AuthContext';
 
 const ordersAPI = "ordersapi"
 const orderspath = '/order'; 
 
 function OrdersBuyer(props) {
+  const { username, isBuyer, isAuthenticated, accessToken, setBalance } = useAuthContext();
+
   const [orders, setOrders] = useState([])
 
   const navigate = useNavigate();
@@ -23,16 +28,16 @@ function OrdersBuyer(props) {
   }
 
   useEffect(() => {
-    if(props.isAuthenticated === false){
+    if(isAuthenticated === false){
       navigate('/')
     }
   
-    if(props.isBuyer === "false"){ 
+    if(isBuyer === "false"){ 
       navigate('/')
     }
 
-    API.get(ordersAPI, orderspath + "/" + props.username, getGSIParams).then((orderRes => setOrders(orderRes)))
-  }, [navigate, props.isAuthenticated, props.isBuyer, props.username]);
+    API.get(ordersAPI, orderspath + "/" + username, getGSIParams).then((orderRes => setOrders(orderRes)))
+  }, [navigate, isAuthenticated, isBuyer, username]);
   
   const disableButton = (event) => {
     event.currentTarget.disabled = true;
@@ -71,7 +76,11 @@ function OrdersBuyer(props) {
         totalAmmount: currentOrder.totalAmmount
       }
     })
-    
+    const msg = "Order " + orderId + " delivered"
+        props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+            horizontal: "top",
+            vertical: "right"
+    })
     updateOrderState(orderId, "delivered");
   }
 
@@ -83,7 +92,7 @@ function OrdersBuyer(props) {
 
     await API.put(ordersAPI, orderspath, {
       queryStringParameters:{
-        accessToken: props.accessToken,
+        accessToken: accessToken,
         requireBalance: "true"
       },
       body:{
@@ -96,9 +105,20 @@ function OrdersBuyer(props) {
         quantity: currentOrder.quantity,
         totalAmmount: currentOrder.totalAmmount
       }
-    }).then((res => props.updateBalance(res.success)))
-    
-    //props.updateBalance(newVal) TODO
+    }).then(result => {
+        setBalance(result.success)
+        const msg = "Order " + orderId + " refunded"
+            props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+                horizontal: "top",
+                vertical: "right"
+        })
+        })
+      .catch(err => {
+        props.addCustomSnack(<Snackbar variant="error" message={err.message} />, {
+            horizontal: "top",
+            vertical: "right"
+        })
+      })
     updateOrderState(orderId, "refunded");
   }
 

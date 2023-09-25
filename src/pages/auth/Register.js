@@ -47,8 +47,6 @@ function Register() {
                     }
                 });
 
-                console.log(user);
-
                 navigate('/validate');
             }  
             else{

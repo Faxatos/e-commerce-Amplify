@@ -5,13 +5,18 @@ import '../App.css';
 import { API } from 'aws-amplify';
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from 'react';
+import Snackbar from '../components/SnackBar/SnackBar';
 
 import Button from 'react-bootstrap/Button';
+
+import { useAuthContext } from '../contexts/AuthContext';
 
 const ordersAPI = "ordersapi"
 const orderspath = '/order'; 
 
 function OrdersSeller(props) {
+  const { username, isBuyer, isAuthenticated, accessToken, setBalance } = useAuthContext();
+
   const [orders, setOrders] = useState([])
 
   const navigate = useNavigate();
@@ -25,16 +30,16 @@ function OrdersSeller(props) {
   }
 
   useEffect(() => {
-    if(props.isAuthenticated === false){
+    if(isAuthenticated === false){
       navigate('/')
     }
   
-    if(props.isBuyer === "true"){ 
+    if(isBuyer === "true"){ 
       navigate('/')
     }
 
-    API.get(ordersAPI, orderspath + "/" + props.username, getGSIParams).then((orderRes => setOrders(orderRes)))
-  }, [navigate, props.isAuthenticated, props.isBuyer, props.username]);
+    API.get(ordersAPI, orderspath + "/" + username, getGSIParams).then((orderRes => setOrders(orderRes)))
+  }, [navigate, isAuthenticated, isBuyer, username]);
   
   const disableButton = (event) => {
     event.currentTarget.disabled = true;
@@ -77,7 +82,11 @@ function OrdersSeller(props) {
         totalAmmount: currentOrder.totalAmmount
       }
     })
-
+    const msg = "Order " + orderId + " cancelled"
+    props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+        horizontal: "top",
+        vertical: "right"
+    })
     updateOrderState(orderId, "mustBeRefunded");
   }
 
@@ -90,7 +99,6 @@ function OrdersSeller(props) {
     try {
       await API.put(ordersAPI, orderspath, {
         queryStringParameters:{
-          accessToken: props.accessToken,
           requireBalance: "false"
         },
         body:{
@@ -104,11 +112,24 @@ function OrdersSeller(props) {
           totalAmmount: currentOrder.totalAmmount
         }
       })
+      const msg = "Order " + orderId + " confirmed"
+      props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+          horizontal: "top",
+          vertical: "right"
+      })
       updateOrderState(orderId, "confirmed");
     } catch (error) {
-      if(error.message === "Request failed with status code 401"){
-        console.log("Insufficient items available in your inventory.");
+      let msg;
+      if(error.message === "Request failed with status code 471"){
+        msg = "Insufficient products " + currentOrder.productName + " available in your inventory."
       }
+      else{
+        msg = error.message
+      }
+      props.addCustomSnack(<Snackbar variant="error" message={msg} />, {
+        horizontal: "top",
+        vertical: "right"
+      })
     }
   }
 
@@ -120,7 +141,7 @@ function OrdersSeller(props) {
 
     await API.put(ordersAPI, orderspath, {
       queryStringParameters:{
-        accessToken: props.accessToken,
+        accessToken: accessToken,
         requireBalance: "true"
       },
       body:{
@@ -133,9 +154,15 @@ function OrdersSeller(props) {
         quantity: currentOrder.quantity,
         totalAmmount: currentOrder.totalAmmount
       }
-    }).then((res => props.updateBalance(res.success)))
+    }).then((res => {
+      const msg = "Payment of order " + orderId + " claimed"
+        props.addCustomSnack(<Snackbar variant="success" message={msg} />, {
+            horizontal: "top",
+            vertical: "right"
+      })
+      setBalance(res.success)
+    }))
 
-    //props.updateBalance(newVal) TODO
     updateOrderState(orderId, "claimed");
   }
 
