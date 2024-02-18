@@ -5,7 +5,7 @@ The application shown below is an e-commerce platform designed for C2C (consumer
 Buyers can view listed products, add desired items to their carts, and proceed to place orders, which can be canceled until confirmed by the seller. Sellers, on the other hand, can list their products, manage their availability, and handle incoming orders, deciding whether to confirm or cancel them. Upon confirmation by the seller, orders are processed, and upon receipt of the product by the buyer, payment is initiated, adding to the seller's balance.
 
 <p align="center">
-<img src="https://github.com/Faxatos/e-commerce-Amplify/assets/57751761/f7b79638-b520-4b35-9f0e-6561b6e1e7fb" alt="drawing" width="800"/>
+<img src="https://github.com/Faxatos/e-commerce-Amplify/assets/57751761/f7b79638-b520-4b35-9f0e-6561b6e1e7fb" alt="drawing" width="700"/>
 </p>
 
 ### Built With
@@ -18,7 +18,7 @@ Buyers can view listed products, add desired items to their carts, and proceed t
 ## System Architecture Overview
 
 <p align="center">
-<img src="https://github.com/Faxatos/e-commerce-Amplify/assets/57751761/c2d8dd88-9074-42bb-9fd0-529ff5dd88ec" alt="drawing" width="800"/>
+<img src="https://github.com/Faxatos/e-commerce-Amplify/assets/57751761/c2d8dd88-9074-42bb-9fd0-529ff5dd88ec" alt="drawing" width="700"/>
 </p>
 
 
